@@ -12,7 +12,7 @@ MISSION:
 Spooder command handler. Parses !spooder commands, deletes the original
 message, and posts the rendered spider with the user's message.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.1.0
+FILE VERSION: v1.2.0
 LAST MODIFIED: 2026-04-05
 COMPONENT: spooder
 CLEAN ARCHITECTURE: Compliant
@@ -70,6 +70,21 @@ class SpooderHandler:
             return
 
         channel_id = payload.get("channel_id", "")
+
+        # ── Access control ────────────────────────────────────────────
+        # Allow if: user is the configured owner, OR has Administrator
+        # permission (0x8 bit) in their guild member permissions.
+        is_owner = (
+            self._config.owner_user_id
+            and str(author_id) == self._config.owner_user_id
+        )
+        member = payload.get("member", {})
+        perms = int(member.get("permissions", 0))
+        is_admin = bool(perms & 0x8)
+
+        if not is_owner and not is_admin:
+            return  # Silent ignore — unauthorized user
+
         args = content[len(prefix):].strip()
 
         # No arguments — show help
