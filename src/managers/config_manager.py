@@ -45,6 +45,7 @@ class ConfigManager:
     fluxer_token: str
     command_prefix: str = "!spooder"
     log_level: str = "INFO"
+    owner_user_id: str = ""
 
 
 def create_config_manager() -> ConfigManager:
@@ -55,11 +56,13 @@ def create_config_manager() -> ConfigManager:
 
     prefix = os.getenv("SPOODER_COMMAND_PREFIX", "!spooder")
     log_level = os.getenv("SPOODER_LOG_LEVEL", "INFO")
+    owner_user_id = os.getenv("SPOODER_OWNER_USER_ID", "")
 
     return ConfigManager(
         fluxer_token=token,
         command_prefix=prefix,
         log_level=log_level,
+        owner_user_id=owner_user_id,
     )
 
 
