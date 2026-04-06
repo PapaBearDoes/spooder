@@ -70,7 +70,7 @@ NOISY_LOGGERS = ("httpx", "httpcore", "websockets", "hpack", "asyncio")
 class ColorFormatter(logging.Formatter):
     """Human-readable formatter with ANSI colors and emoji symbols."""
 
-    def format(self, record: logging.Record) -> str:
+    def format(self, record: logging.LogRecord) -> str:
         level = record.levelname
         color = COLORS.get(level, "")
         symbol = SYMBOLS.get(level, "")
