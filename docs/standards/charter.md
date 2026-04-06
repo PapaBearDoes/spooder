@@ -172,23 +172,29 @@ Use a **time-windowed dict**, not a set. A set grows without bound. The time-win
 dict self-cleans: old keys are overwritten and aged out.
 
 
-### **Rule #8: Unicode Spider Rendering - SACRED**
+### **Rule #8: Backslash Escaping for Spider Legs - SACRED**
 
-Spooder uses Unicode box-drawing characters for spider legs to avoid Fluxer's
-slash-as-command parsing. The forward slash `/` and backslash `\` are replaced with
-their Unicode equivalents:
+Spooder uses real `/\` characters for spider legs. Fluxer's markdown engine treats
+`\` as an escape character and strips single backslashes. To render a single `\` in
+chat, the REST API payload must contain `\\` (double backslash).
 
-| Character | Unicode | Code Point | Purpose |
-|-----------|---------|------------|---------|
-| `╱` | Box Drawings Light Diagonal Upper Right to Lower Left | U+2571 | Replaces `/` |
-| `╲` | Box Drawings Light Diagonal Upper Left to Lower Right | U+2572 | Replaces `\` |
+#### **Escaping Chain**
+```
+Python string:  /\\      (3 chars: / \ \)
+json.dumps:     /\\\\    (JSON escapes each \ to \\)
+Fluxer receives: /\\     (JSON decoded back to /\\)
+Fluxer renders:  /\      (markdown un-escapes \\ to \)
+```
+
+In Python source code, the leg pair constant is `"/\\\\"` which produces the
+Python string `/\\`.
 
 #### **Spider Anatomy**
 ```
-╱╲╱╲{eyes}╱╲╱╲ -> Spooder Said: {message}
+/\/\^^/\/\ -> Spooder Said: She is happy!
 ```
 
-- **Legs**: Four pairs of `╱╲` — two on each side of the eyes
+- **Legs**: Four pairs of `/\` — two on each side of the eyes
 - **Eyes**: Two-character string from the emotions map, determined by the `<emotion>` argument
 - **Arrow**: ` -> ` separator between spider and message
 - **Prefix**: `Spooder Said: ` before the user's message text
@@ -200,21 +206,21 @@ their Unicode equivalents:
 
 #### **Example Output**
 ```
-╱╲╱╲^^╱╲╱╲ -> Spooder Said: She is happy!
-╱╲╱╲><╱╲╱╲ -> Spooder Said: Don't touch my web!
-╱╲╱╲;;╱╲╱╲ -> Spooder Said: It's raining on my web...
+/\/\^^/\/\ -> Spooder Said: She is happy!
+/\/\><\/\/\ -> Spooder Said: Don't touch my web!
+/\/\;;/\/\ -> Spooder Said: It's raining on my web...
 ```
 
-#### **Why Unicode?**
-Fluxer interprets a leading `/` as a command prefix even though slash commands are
-not yet implemented. Using `╱` (U+2571) and `╲` (U+2572) renders visually identical
-in chat but completely sidesteps the parser. These are box-drawing characters that
-display consistently across monospace and proportional fonts.
+#### **Why Double-Escaped Backslashes?**
+Fluxer's markdown engine treats `\` as an escape character — both in user-typed
+messages and in bot REST API payloads. A single `\` gets stripped. Sending `\\`
+through the REST API causes Fluxer to render a single `\`, giving Spooder
+properly formed `/\` legs at normal text width.
 
 #### **Red Flags**
-- ❌ Using literal `/` or `\` in spider leg rendering
-- ❌ Using zero-width characters or other hacks to escape the parser
-- ❌ Hardcoding the spider string — always assemble from the emotions map
+- ❌ Using single backslashes in spider leg rendering (Fluxer will strip them)
+- ❌ Using Unicode box-drawing characters (render at double width in Fluxer)
+- ❌ Hardcoding the spider string — always assemble from the leg constants and emotions map
 
 
 ### **Rule #9: LoggingConfigManager with Colorization - MANDATORY**
@@ -449,7 +455,7 @@ staying online is more important than any single command succeeding.
 11. Does the Dockerfile use a Pure Python entrypoint with tini? ✅ Required
 12. Does every handler implement a dedup guard? ✅ Required
 13. Does the handler delete the command message before posting? ✅ Required
-14. Are spider legs using Unicode `╱╲` (U+2571/U+2572), never literal slashes? ✅ Required
+14. Are spider legs using double-escaped backslashes (`/\\\\` in Python source), never single backslashes or Unicode? ✅ Required
 
 ### **Red Flags — IMMEDIATE STOP:**
 - ❌ Direct constructor calls in production code
@@ -460,7 +466,7 @@ staying online is more important than any single command succeeding.
 - ❌ Bash scripts for Docker entrypoints
 - ❌ Missing `tini` for PID 1 signal handling
 - ❌ Missing dedup guard in any event handler
-- ❌ Using literal `/` or `\` in spider leg rendering
+- ❌ Using single backslashes or Unicode characters for spider legs instead of double-escaped backslashes
 - ❌ Posting spider output without first attempting to delete the command message
 - ❌ Crashing on unknown emotions instead of showing a help message
 
@@ -480,7 +486,7 @@ staying online is more important than any single command succeeding.
 - ✅ Every handler implements a dedup guard
 - ✅ Command messages are deleted before spider output is posted
 - ✅ Unknown emotions produce a help message, not a crash
-- ✅ Spider legs use Unicode characters, never literal slashes
+- ✅ Spider legs use double-escaped backslashes for proper rendering
 - ✅ Gateway reconnection works via session resume
 
 ### **Production Readiness:**
@@ -496,7 +502,7 @@ staying online is more important than any single command succeeding.
 - **A fun, expressive spider friend** that anyone can summon
 - **Clean command output** through automatic message deletion
 - **Resilience** through graceful error handling and automatic recovery
-- **Consistent rendering** through Unicode spider legs that never trigger the parser
+- **Consistent rendering** through double-escaped backslashes that survive Fluxer's markdown engine
 
 **Spooder is small, simple, and reliable. That's the whole point.**
 
