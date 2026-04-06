@@ -33,7 +33,7 @@ logging.addLevelName(SUCCESS_LEVEL, "SUCCESS")
 def _success(self, message, *args, **kwargs):
     """Custom SUCCESS log method."""
     if self.isEnabledFor(SUCCESS_LEVEL):
-        self._log(SUCCESS_LEVEL, message, *args, **kwargs)
+        self._log(SUCCESS_LEVEL, message, args, **kwargs)
 
 
 # Monkey-patch the success method onto Logger
