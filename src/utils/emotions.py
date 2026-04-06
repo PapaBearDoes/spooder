@@ -26,7 +26,7 @@ Repository: https://github.com/PapaBearDoes/spooder
 # Fluxer's markdown engine treats \ as an escape character, so we send \\
 # in the REST payload to render a single \ in chat.
 # ---------------------------------------------------------------------------
-LEG_PAIR = "/\\"
+LEG_PAIR = "/\\\\"
 
 # Full leg groups (two pairs per side)
 LEGS_LEFT  = f"{LEG_PAIR}{LEG_PAIR}"
