@@ -1,0 +1,134 @@
+# ============================================================================
+# Spooder — GitHub Actions Workflow
+# ============================================================================
+# FILE VERSION: v1.0.0
+# Repository: https://github.com/PapaBearDoes/spooder
+# ============================================================================
+#
+# Builds and pushes the Spooder Docker image to GHCR:
+#   - spooder  (Python / native gateway)
+#
+# On main branch: after image is built, deploys to Lofn via SSH.
+# On dev/* branches: builds and pushes image only (no deploy).
+#
+# Uses Docker layer caching to speed up builds.
+#
+# Required GitHub Secrets:
+#   GITHUB_TOKEN          — automatic, for GHCR push
+#
+# Future deploy secrets (K8s migration):
+#   SPOODER_SSH_KEY       — private SSH key for deploy user on Lofn
+#   SPOODER_SSH_USER      — SSH username on Lofn
+#
+# ============================================================================
+
+name: Build and Push Spooder
+
+on:
+  push:
+    branches: [main, "dev/**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ghcr.io/papabeardoes/spooder
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      # =====================================================================
+      # Setup
+      # =====================================================================
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Free up disk space
+        run: |
+          echo "🧹 Cleaning up disk space..."
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo docker image prune --all --force
+
+      # =====================================================================
+      # Docker Setup
+      # =====================================================================
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      # =====================================================================
+      # Build and Push
+      # =====================================================================
+      - name: Build and push spooder image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: runtime
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # =====================================================================
+      # Summary
+      # =====================================================================
+      - name: Image digest
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "## 🕷️ spooder image built" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ env.IMAGE_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Tags:**" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  # =====================================================================
+  # Deploy (main branch only)
+  # =====================================================================
+  # For now this is a placeholder. Deploys are manual:
+  #   ssh lofn, cd /opt/spooder, docker compose pull && docker compose up -d
+  #
+  # When ready, uncomment and configure:
+  #
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs: [build-and-push]
+  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  #   timeout-minutes: 10
+  #   permissions:
+  #     contents: read
+  #
+  #   steps:
+  #     - name: Deploy to Lofn
+  #       run: |
+  #         echo "🕷️ Deploy step — not yet configured"
+  #         echo "Manual deploy: ssh lofn, cd /opt/spooder, docker compose pull && docker compose up -d"

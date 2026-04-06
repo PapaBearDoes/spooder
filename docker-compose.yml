@@ -1,0 +1,24 @@
+# ==========================================================================
+# Spooder — Emotive Spider Bot for Fluxer
+# docker-compose.yml
+# ==========================================================================
+
+services:
+  spooder:
+    build: .
+    container_name: spooder
+    image: ghcr.io/papabeardoes/spooder:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+    secrets:
+      - spooder_fluxer_token
+    volumes:
+      - ./logs:/app/logs
+
+secrets:
+  spooder_fluxer_token:
+    file: ./secrets/spooder_fluxer_token

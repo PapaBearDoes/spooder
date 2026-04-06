@@ -1,0 +1,9 @@
+# ==========================================================================
+# Spooder — Emotive Spider Bot for Fluxer
+# Python dependencies
+# ==========================================================================
+
+httpx>=0.27.0,<1.0.0
+
+# TODO: Add fluxer-py gateway client when available
+# fluxer-py>=x.x.x
