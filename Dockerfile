@@ -33,6 +33,7 @@ RUN groupadd -g ${DEFAULT_GID} appgroup && \
 
 # Copy venv from builder
 ENV PATH="/opt/venv/bin:$PATH"
+ENV PYTHONPATH="/app"
 COPY --from=builder /opt/venv /opt/venv
 
 # Copy application
