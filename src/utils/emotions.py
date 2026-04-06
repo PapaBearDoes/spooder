@@ -22,14 +22,11 @@ Repository: https://github.com/PapaBearDoes/spooder
 """
 
 # ---------------------------------------------------------------------------
-# Spider leg characters — Unicode box-drawing diagonals
-# These replace literal / and \ to avoid Fluxer's command parser
+# Spider leg characters — double-escaped backslashes
+# Fluxer's markdown engine treats \ as an escape character, so we send \\
+# in the REST payload to render a single \ in chat.
 # ---------------------------------------------------------------------------
-LEG_FORWARD = "\u2571"   # ╱  (U+2571)
-LEG_BACK    = "\u2572"   # ╲  (U+2572)
-
-# Leg pair: ╱╲
-LEG_PAIR = f"{LEG_FORWARD}{LEG_BACK}"
+LEG_PAIR = "/\\"
 
 # Full leg groups (two pairs per side)
 LEGS_LEFT  = f"{LEG_PAIR}{LEG_PAIR}"
@@ -118,6 +115,6 @@ def list_emotions() -> str:
 
 
 __all__ = [
-    "EMOTIONS", "DEFAULT_EYES", "LEG_FORWARD", "LEG_BACK",
+    "EMOTIONS", "DEFAULT_EYES", "LEG_PAIR",
     "build_spider", "get_eyes", "list_emotions",
 ]
