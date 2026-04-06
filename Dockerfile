@@ -23,8 +23,11 @@ FROM python:3.12-slim AS runtime
 ARG DEFAULT_UID=1000
 ARG DEFAULT_GID=1000
 
-# Install tini for PID 1 signal handling
-RUN apt-get update && apt-get install -y --no-install-recommends tini \
+# Install tini, curl (healthcheck), passwd (usermod/groupmod)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tini \
+    curl \
+    passwd \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app user
@@ -42,7 +45,11 @@ COPY docker-entrypoint.py /app/docker-entrypoint.py
 COPY src/ /app/src/
 
 # Create writable directories
-RUN mkdir -p /app/logs
+RUN mkdir -p /app/logs && \
+    chown -R appuser:appgroup /app
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
 
 # NOTE: Do NOT use USER directive — entrypoint handles privilege dropping
 ENTRYPOINT ["/usr/bin/tini", "--", "python", "/app/docker-entrypoint.py"]
