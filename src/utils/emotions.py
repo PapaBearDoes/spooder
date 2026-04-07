@@ -29,7 +29,7 @@ Repository: https://github.com/PapaBearDoes/spooder
 LEG_PAIR = "/\\\\"
 
 # Full leg groups (two pairs per side)
-LEGS_LEFT  = f"{LEG_PAIR}{LEG_PAIR}"
+LEGS_LEFT = f"{LEG_PAIR}{LEG_PAIR}"
 LEGS_RIGHT = f"{LEG_PAIR}{LEG_PAIR}"
 
 # ---------------------------------------------------------------------------
@@ -40,29 +40,29 @@ LEGS_RIGHT = f"{LEG_PAIR}{LEG_PAIR}"
 # ---------------------------------------------------------------------------
 EMOTIONS: dict[str, str] = {
     # --- Core emotions ---
-    "happy":      "^^",
-    "sad":        ";;",
-    "angry":      "><",
-    "love":       "♥♥",
-    "surprised":  "OO",
-
+    "happy": "^^",
+    "sad": ";;",
+    "angry": "><",
+    "love": "♥♥",
+    "surprised": "OO",
     # --- Expressive ---
-    "wink":       "^~",
-    "sleepy":     "--",
-    "dead":       "XX",
-    "confused":   "??",
-    "scared":     "°°",
-    "shy":        "..",
-    "excited":    "**",
+    "wink": "^~",
+    "sleepy": "--",
+    "dead": "XX",
+    "confused": "??",
+    "scared": "°°",
+    "shy": "..",
+    "excited": "**",
     "suspicious": "¬¬",
-    "smug":       "≖≖",
-    "dizzy":      "@@",
-    "crying":     "TT",
-    "sparkle":    "✧✧",
-    "cool":       "■■",
-    "blank":      "  ",
-    "derp":       "◉◉",
-    "uwu":        "◡◡",
+    "smug": "≖≖",
+    "dizzy": "@@",
+    "crying": "TT",
+    "sparkle": "✧✧",
+    "cool": "■■",
+    "blank": "  ",
+    "derp": "◉◉",
+    "uwu": "◡◡",
+    "disappointment": "vv",
 }
 
 # Default eyes when no emotion or unknown emotion is provided
@@ -115,6 +115,10 @@ def list_emotions() -> str:
 
 
 __all__ = [
-    "EMOTIONS", "DEFAULT_EYES", "LEG_PAIR",
-    "build_spider", "get_eyes", "list_emotions",
+    "EMOTIONS",
+    "DEFAULT_EYES",
+    "LEG_PAIR",
+    "build_spider",
+    "get_eyes",
+    "list_emotions",
 ]
