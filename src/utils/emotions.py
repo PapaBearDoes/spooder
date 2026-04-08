@@ -63,6 +63,7 @@ EMOTIONS: dict[str, str] = {
     "derp": "◉◉",
     "uwu": "◡◡",
     "disappointment": "vv",
+    "disappointed": "vv",
 }
 
 # Default eyes when no emotion or unknown emotion is provided
