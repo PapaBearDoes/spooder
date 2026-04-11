@@ -407,7 +407,7 @@ Handler parses emotion + message
   ↓
 DELETE the original message (REST API call)
   ↓
-POST the spider: ╱╲╱╲^^╱╲╱╲ -> Spooder Said: She is happy!
+POST the spider: /\/\^^/\/\ -> Spooder Said: She is happy!
 ```
 
 #### **Failure Handling**
