@@ -1,12 +1,20 @@
 # ============================================================================
 # Spooder — GitHub Actions Workflow
 # ============================================================================
-# FILE VERSION: v1.0.0
+# FILE VERSION: v1.1.0
 # Repository: https://github.com/PapaBearDoes/spooder
 # ============================================================================
 #
 # Builds and pushes the Spooder Docker image to GHCR:
 #   - spooder  (Python / native gateway)
+#
+# Multi-arch: one tag (e.g. :latest) carries BOTH linux/amd64 (cluster nodes)
+# and linux/arm64 (Raspberry Pi 5 nodes) as a single manifest list, so :latest
+# resolves to the right binary per node automatically. Built with QEMU
+# emulation — Spooder is pure-Python (httpx + websockets, both ship aarch64
+# wheels), so the emulated arm64 leg is fast and stays well within the timeout.
+# (No native-arm runner / push-by-digest / merge dance needed here — that
+# complexity in Skald & Swabrr was only for their slow Next.js web image.)
 #
 # On main branch: after image is built, deploys to Lofn via SSH.
 # On dev/* branches: builds and pushes image only (no deploy).
@@ -61,6 +69,9 @@ jobs:
       # =====================================================================
       # Docker Setup
       # =====================================================================
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -90,6 +101,7 @@ jobs:
         with:
           context: .
           target: runtime
+          platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
